@@ -29,20 +29,63 @@
             font-size: 2em;
             margin-bottom: 20px;
         }
-        .lyrics {
-            white-space: pre-wrap;
+        .lyrics-container {
             background-color: #f9f9f9;
             padding: 20px;
             border-radius: 5px;
             border: 1px solid #ddd;
-            text-align: left;
+            text-align: center; /* Center lyrics text */
             margin-bottom: 20px;
             max-height: 60vh;
             overflow-y: auto;
             font-size: 1em;
+            position: relative; /* Added for positioning */
+        }
+        .lyrics {
+            white-space: pre-wrap;
+            text-align: center; /* Center lyrics text */
         }
         .text-size-selector {
-            margin-bottom: 20px;
+            position: sticky; /* Sticky positioning to remain fixed within lyrics container */
+            top: 10px; /* Adjust as needed */
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1; /* Ensure it appears above lyrics when scrolling */
+        }
+        .text-size-selector select,
+        .text-size-selector input[type="range"],
+        .text-size-selector button {
+            margin: 5px;
+        }
+        .fullscreen-button {
+            background-color: #007aff;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px; /* Adjust margin for spacing */
+        }
+        .fullscreen-button:hover {
+            background-color: #0056b3;
+        }
+        .start-stop-button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 10px; /* Adjust margin for spacing */
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .start-stop-button:hover {
+            background-color: #45a049;
         }
         a {
             color: #007aff;
@@ -52,27 +95,136 @@
         a:hover {
             text-decoration: underline;
         }
+
+        /* Full-screen mode styles */
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f5f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100; /* Ensure full-screen elements are on top */
+        }
+        .fullscreen .container {
+            max-width: 100%; /* Adjust as needed */
+            box-shadow: none; /* Remove shadow in full-screen mode */
+            overflow: auto; /* Allow scrolling in full-screen mode */
+            text-align: center; /* Center contents */
+        }
+        .fullscreen .lyrics-container {
+            max-width: 100%; /* Ensure lyrics container takes full width */
+            text-align: center; /* Center lyrics text */
+        }
+        .fullscreen .text-size-selector {
+            top: 10px; /* Adjust as needed */
+            position: absolute; /* Position absolutely for centering */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Adjust for centering */
+            background-color: rgba(249, 249, 249, 0.9); /* Adjust background opacity */
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1; /* Ensure it appears above lyrics */
+        }
+        .fullscreen .text-size-selector select,
+        .fullscreen .text-size-selector input[type="range"],
+        .fullscreen .text-size-selector button {
+            margin: 5px;
+        }
     </style>
     <script>
+        var scrollSpeed = 50; // Initial scrolling speed (milliseconds)
+        var autoScrollInterval; // Variable to store auto-scroll interval
+        var isAutoScrolling = false; // Flag to track auto-scrolling state
+
         function changeTextSize() {
             var selectedSize = document.getElementById("text-size").value;
             document.querySelector(".lyrics").style.fontSize = selectedSize + "em";
+            // Update scroll speed based on selected size
+            scrollSpeed = Math.floor(50 / selectedSize); // Adjust speed based on text size (adjust as needed)
+        }
+
+        function toggleAutoScroll() {
+            if (!isAutoScrolling) {
+                startAutoScroll();
+                isAutoScrolling = true;
+                document.getElementById("auto-scroll-btn").innerText = "Stop Auto Scroll";
+            } else {
+                stopAutoScroll();
+                isAutoScrolling = false;
+                document.getElementById("auto-scroll-btn").innerText = "Start Auto Scroll";
+            }
+        }
+
+        function startAutoScroll() {
+            var lyricsContainer = document.querySelector(".lyrics-container");
+            var scrollHeight = lyricsContainer.scrollHeight;
+            var clientHeight = lyricsContainer.clientHeight;
+            
+            var scrollPosition = lyricsContainer.scrollTop; // Get current scroll position
+            
+            autoScrollInterval = setInterval(function() {
+                if (scrollPosition < scrollHeight - clientHeight) {
+                    scrollPosition++;
+                    lyricsContainer.scrollTop = scrollPosition;
+                } else {
+                    stopAutoScroll(); // Stop auto-scrolling
+                    lyricsContainer.scrollTop = 0; // Scroll back to top
+                    isAutoScrolling = false;
+                    document.getElementById("auto-scroll-btn").innerText = "Start Auto Scroll"; // Reset button text
+                }
+            }, scrollSpeed);
+        }
+
+        function stopAutoScroll() {
+            clearInterval(autoScrollInterval);
+        }
+
+        function toggleFullScreen() {
+            var lyricsContainer = document.querySelector(".lyrics-container");
+            if (!document.fullscreenElement) {
+                lyricsContainer.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function updateScrollSpeed() {
+            var speedSlider = document.getElementById("scroll-speed");
+            scrollSpeed = speedSlider.value;
+            if (isAutoScrolling) {
+                clearInterval(autoScrollInterval);
+                startAutoScroll();
+            }
         }
     </script>
 </head>
 <body>
     <div class="container">
         <h1>{{ song_title }} by {{ artist }}</h1>
-        <div class="text-size-selector">
-            <label for="text-size">Text Size: </label>
-            <select id="text-size" onchange="changeTextSize()">
-                <option value="1">Normal</option>
-                <option value="1.25">Large</option>
-                <option value="1.5">Larger</option>
-                <option value="2">Largest</option>
-            </select>
+        <div class="lyrics-container">
+            <div class="text-size-selector">
+                <label for="text-size">Text Size: </label>
+                <select id="text-size" onchange="changeTextSize()">
+                    <option value="1">Normal</option>
+                    <option value="2">Large</option>
+                    <option value="4">Larger</option>
+                    <option value="6">Largest</option>
+                </select>
+                <input type="range" id="scroll-speed" class="scroll-speed-slider" min="10" max="200" value="50" onchange="updateScrollSpeed()">
+                <button class="start-stop-button" id="auto-scroll-btn" onclick="toggleAutoScroll()">Start Auto Scroll</button>
+                <button class="fullscreen-button" onclick="toggleFullScreen()">Toggle Full Screen</button>
+            </div>
+            <div class="lyrics">
+                {{ lyrics }}
+            </div>
         </div>
-        <div class="lyrics">{{ lyrics }}</div>
         <a href="{{ url_for('home') }}">Back to Search</a>
     </div>
 </body>
