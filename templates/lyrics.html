@@ -59,6 +59,12 @@
         .text-size-selector button {
             margin: 5px;
         }
+        .scroll-speed-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: -10px; /* Adjust to position the labels correctly */
+        }
         .fullscreen-button {
             background-color: #007aff;
             color: white;
@@ -185,13 +191,30 @@
         }
 
         function toggleFullScreen() {
-            var lyricsContainer = document.querySelector(".lyrics-container");
-            if (!document.fullscreenElement) {
-                lyricsContainer.requestFullscreen().catch(err => {
-                    alert(`Error attempting to enable full-screen mode: ${err.message}`);
-                });
+            var elem = document.querySelector(".lyrics-container");
+            if (!document.fullscreenElement &&    // Standard method
+                !document.mozFullScreenElement && // Firefox
+                !document.webkitFullscreenElement && // Chrome, Safari, Opera
+                !document.msFullscreenElement) {  // IE/Edge
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.mozRequestFullScreen) { // Firefox
+                    elem.mozRequestFullScreen();
+                } else if (elem.webkitRequestFullscreen) { // Chrome, Safari, Opera
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) { // IE/Edge
+                    elem.msRequestFullscreen();
+                }
             } else {
-                document.exitFullscreen();
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) { // Firefox
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { // IE/Edge
+                    document.msExitFullscreen();
+                }
             }
         }
 
