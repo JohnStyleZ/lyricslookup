@@ -23,7 +23,7 @@
             max-width: 600px;
             width: 100%;
             text-align: center;
-            overflow: hidden;  /* Added to prevent scrollbars when not necessary */
+            overflow: hidden;
         }
         h1 {
             font-size: 2em;
@@ -37,8 +37,12 @@
             border: 1px solid #ddd;
             text-align: left;
             margin-bottom: 20px;
-            max-height: 60vh; /* Restricts the height of the lyrics container */
-            overflow-y: auto; /* Enables vertical scrolling */
+            max-height: 60vh;
+            overflow-y: auto;
+            font-size: 1em;
+        }
+        .text-size-selector {
+            margin-bottom: 20px;
         }
         a {
             color: #007aff;
@@ -49,10 +53,25 @@
             text-decoration: underline;
         }
     </style>
+    <script>
+        function changeTextSize() {
+            var selectedSize = document.getElementById("text-size").value;
+            document.querySelector(".lyrics").style.fontSize = selectedSize + "em";
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>{{ song_title }} by {{ artist }}</h1>
+        <div class="text-size-selector">
+            <label for="text-size">Text Size: </label>
+            <select id="text-size" onchange="changeTextSize()">
+                <option value="1">Normal</option>
+                <option value="1.25">Large</option>
+                <option value="1.5">Larger</option>
+                <option value="2">Largest</option>
+            </select>
+        </div>
         <div class="lyrics">{{ lyrics }}</div>
         <a href="{{ url_for('home') }}">Back to Search</a>
     </div>
