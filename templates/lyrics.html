@@ -235,8 +235,10 @@
         // Detect iPhone Safari and add class
         function detectiPhoneSafari() {
             var ua = navigator.userAgent;
+            console.log(ua); // Log the user agent for verification
             if (/iPhone/.test(ua) && /Safari/.test(ua) && !/CriOS/.test(ua) && !/FxiOS/.test(ua)) {
                 document.body.classList.add('ios-safari');
+                console.log('iPhone Safari detected');
             }
         }
 
