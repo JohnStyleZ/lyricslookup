@@ -141,6 +141,11 @@
         .fullscreen .text-size-selector button {
             margin: 5px;
         }
+
+        /* Hide full-screen button on iPhone Safari */
+        .ios-safari .fullscreen-button {
+            display: none;
+        }
     </style>
     <script>
         var scrollSpeed = 50; // Initial scrolling speed (milliseconds)
@@ -226,6 +231,16 @@
                 startAutoScroll();
             }
         }
+
+        // Detect iPhone Safari and add class
+        function detectiPhoneSafari() {
+            var ua = navigator.userAgent;
+            if (/iPhone/.test(ua) && /Safari/.test(ua) && !/CriOS/.test(ua) && !/FxiOS/.test(ua)) {
+                document.body.classList.add('ios-safari');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', detectiPhoneSafari);
     </script>
 </head>
 <body>
