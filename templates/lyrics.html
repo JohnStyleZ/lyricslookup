@@ -201,7 +201,7 @@
                 } else if (elem.mozRequestFullScreen) { // Firefox
                     elem.mozRequestFullScreen();
                 } else if (elem.webkitRequestFullscreen) { // Chrome, Safari, Opera
-                    elem.webkitRequestFullscreen();
+                    elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
                 } else if (elem.msRequestFullscreen) { // IE/Edge
                     elem.msRequestFullscreen();
                 }
