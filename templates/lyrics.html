@@ -59,12 +59,6 @@
         .text-size-selector button {
             margin: 5px;
         }
-        .scroll-speed-labels {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-top: -10px; /* Adjust to position the labels correctly */
-        }
         .fullscreen-button {
             background-color: #007aff;
             color: white;
@@ -136,11 +130,6 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             z-index: 1; /* Ensure it appears above lyrics */
         }
-        .fullscreen .text-size-selector select,
-        .fullscreen .text-size-selector input[type="range"],
-        .fullscreen .text-size-selector button {
-            margin: 5px;
-        }
 
         /* Hide full-screen button on iPhone Safari */
         .ios-safari .fullscreen-button {
@@ -151,6 +140,7 @@
         var scrollSpeed = 50; // Initial scrolling speed (milliseconds)
         var autoScrollInterval; // Variable to store auto-scroll interval
         var isAutoScrolling = false; // Flag to track auto-scrolling state
+        var lastScrollTop = 0; // Variable to store last scroll position
 
         function changeTextSize() {
             var selectedSize = document.getElementById("text-size").value;
@@ -176,19 +166,19 @@
             var scrollHeight = lyricsContainer.scrollHeight;
             var clientHeight = lyricsContainer.clientHeight;
             
-            var scrollPosition = lyricsContainer.scrollTop; // Get current scroll position
-            
-            autoScrollInterval = setInterval(function() {
-                if (scrollPosition < scrollHeight - clientHeight) {
-                    scrollPosition++;
-                    lyricsContainer.scrollTop = scrollPosition;
-                } else {
-                    stopAutoScroll(); // Stop auto-scrolling
-                    lyricsContainer.scrollTop = 0; // Scroll back to top
-                    isAutoScrolling = false;
-                    document.getElementById("auto-scroll-btn").innerText = "Start Auto Scroll"; // Reset button text
+            function autoScroll() {
+                if (isAutoScrolling) {
+                    var scrollPosition = lyricsContainer.scrollTop;
+                    if (scrollPosition < scrollHeight - clientHeight) {
+                        lyricsContainer.scrollTop += 1;
+                    } else {
+                        stopAutoScroll();
+                        document.getElementById("auto-scroll-btn").innerText = "Start Auto Scroll";
+                    }
                 }
-            }, scrollSpeed);
+            }
+            
+            autoScrollInterval = setInterval(autoScroll, scrollSpeed);
         }
 
         function stopAutoScroll() {
@@ -231,18 +221,6 @@
                 startAutoScroll();
             }
         }
-
-        // Detect iPhone Safari and add class
-        function detectiPhoneSafari() {
-            var ua = navigator.userAgent;
-            console.log(ua); // Log the user agent for verification
-            if (/iPhone/.test(ua) && /Safari/.test(ua) && !/CriOS/.test(ua) && !/FxiOS/.test(ua)) {
-                document.body.classList.add('ios-safari');
-                console.log('iPhone Safari detected');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', detectiPhoneSafari);
     </script>
 </head>
 <body>
