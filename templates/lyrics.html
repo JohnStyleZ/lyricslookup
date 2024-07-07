@@ -132,8 +132,10 @@
         }
 
         /* Hide full-screen button on iPhone Safari */
-        .ios-safari .fullscreen-button {
-            display: none;
+        @supports (-webkit-touch-callout: none) {
+            .fullscreen-button {
+                display: none;
+            }
         }
     </style>
     <script>
