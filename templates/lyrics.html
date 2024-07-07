@@ -87,6 +87,22 @@
         .start-stop-button:hover {
             background-color: #45a049;
         }
+        .karaoke-mode-button {
+            background-color: #f39c12; /* Orange */
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .karaoke-mode-button:hover {
+            background-color: #e67e22;
+        }
         a {
             color: #007aff;
             text-decoration: none;
@@ -136,6 +152,13 @@
             .fullscreen-button {
                 display: none;
             }
+        }
+
+        /* Hide elements in karaoke mode */
+        .karaoke-mode .text-size-selector,
+        .karaoke-mode .start-stop-button,
+        .karaoke-mode .fullscreen-button {
+            display: none;
         }
     </style>
     <script>
@@ -223,11 +246,47 @@
                 startAutoScroll();
             }
         }
+
+        function toggleKaraokeMode() {
+            var lyricsContainer = document.querySelector(".lyrics-container");
+            var karaokeButton = document.getElementById("karaoke-mode-btn");
+
+            if (lyricsContainer.classList.contains("karaoke-mode")) {
+                // Exit karaoke mode
+                lyricsContainer.classList.remove("karaoke-mode");
+                karaokeButton.innerText = "Karaoke Mode Off";
+                document.querySelector(".text-size-selector").style.display = "block";
+                document.querySelector(".start-stop-button").style.display = "inline-block";
+                document.querySelector(".fullscreen-button").style.display = "inline-block";
+            } else {
+                // Enter karaoke mode
+                lyricsContainer.classList.add("karaoke-mode");
+                karaokeButton.innerText = "Karaoke Mode On";
+                document.querySelector(".text-size-selector").style.display = "none";
+                document.querySelector(".start-stop-button").style.display = "none";
+                document.querySelector(".fullscreen-button").style.display = "none";
+            }
+        }
+
+        // Ensure karaoke mode is off on page load and all controllers are hidden
+        window.onload = function() {
+            var lyricsContainer = document.querySelector(".lyrics-container");
+            var karaokeButton = document.getElementById("karaoke-mode-btn");
+            if (lyricsContainer.classList.contains("karaoke-mode")) {
+                lyricsContainer.classList.remove("karaoke-mode");
+            }
+            karaokeButton.innerText = "Karaoke Mode Off"; // Set the correct initial state
+            document.querySelector(".text-size-selector").style.display = "block";
+            document.querySelector(".start-stop-button").style.display = "inline-block";
+            document.querySelector(".fullscreen-button").style.display = "inline-block";
+            document.querySelector(".karaoke-mode-button").click(); // Simulate click to ensure initial state is set correctly
+        }
     </script>
 </head>
 <body>
     <div class="container">
         <h1>{{ song_title }} by {{ artist }}</h1>
+        <button class="karaoke-mode-button" id="karaoke-mode-btn" onclick="toggleKaraokeMode()">Karaoke Mode Off</button>
         <div class="lyrics-container">
             <div class="text-size-selector">
                 <label for="text-size">Text Size: </label>
