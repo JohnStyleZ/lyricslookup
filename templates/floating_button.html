@@ -1,0 +1,316 @@
+<style>
+    /* CSS styles for the floating button */
+    .floating-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000; /* Ensure it's above other content */
+        background-color: #007aff;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        padding: 15px;
+        font-size: 1.2em;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* CSS styles for the song list container */
+    .song-list-container {
+        position: fixed;
+        bottom: 20px; /* Adjust as needed */
+        right: 80px; /* Adjust as needed */
+        z-index: 999; /* Ensure it's below the floating button */
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        padding: 20px;
+        display: none; /* Initially hidden */
+    }
+
+    /* CSS styles for list items */
+    .song-list-item {
+        margin-bottom: 10px;
+        padding: 8px 12px;
+        background-color: #f5f5f7;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* CSS styles for buttons inside the song list container */
+    .song-list-button {
+        padding: 8px 12px;
+        background-color: #007aff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+</style>
+
+<button class="floating-button" id="songListButton">Song List</button>
+
+<div class="song-list-container" id="songListContainer">
+    <!-- Add your song list content here -->
+    <h2>Your Song List</h2>
+    <ul id="songList">
+        <!-- Song list items will be dynamically added here -->
+    </ul>
+    <button id="removeSelectedButton" class="song-list-button">Remove Selected</button>
+    <button id="shareButton" class="song-list-button">Share</button>
+    <button id="importButton" class="song-list-button">Import</button>
+</div>
+
+<script>
+    // Function to add a song to the list
+    function addSongToList(songId, songName, skipUpdate = false) {
+        const songList = document.getElementById('songList');
+
+        // Create list item for the song
+        const listItem = document.createElement('li');
+        listItem.className = 'song-list-item';
+        listItem.setAttribute('data-id', songId); // Store song ID as a data attribute
+
+        // Create element for song name
+        const songNameElement = document.createElement('span');
+        songNameElement.textContent = songName;
+        songNameElement.className = 'song-name';
+
+        // Create remove button
+        const removeButton = document.createElement('button');
+        removeButton.textContent = 'Remove';
+        removeButton.className = 'song-list-button remove-button';
+        removeButton.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent navigation when clicking remove button
+            listItem.remove();
+            updateLocalStorage(); // Update local storage after removing a song
+            toggleRemoveSelectedButton(); // Check if remove selected button should be displayed
+        });
+
+        // Append checkbox, song name, and remove button to list item
+
+        listItem.appendChild(songNameElement);
+        listItem.appendChild(removeButton);
+
+        // Add click event to navigate to lyrics page
+        songNameElement.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent remove button click event
+            window.location.href = `/lyrics/${songId}`; // Replace with your actual route
+        });
+
+        // Append the list item to the song list
+        songList.appendChild(listItem);
+
+        if (!skipUpdate) {
+            updateLocalStorage(); // Update local storage after adding a song
+            toggleRemoveSelectedButton(); // Check if remove selected button should be displayed
+        }
+    }
+
+    // Function to update local storage with current song list
+    function updateLocalStorage() {
+        console.log("Updating local storage");
+        const songList = document.getElementById('songList');
+        const songItems = songList.querySelectorAll('.song-list-item');
+        const songs = [];
+
+        songItems.forEach(item => {
+            const songId = item.getAttribute('data-id');
+            const songName = item.querySelector('.song-name').textContent.trim();
+            // Check if songId is valid before adding to array
+            if (songId && songId !== 'undefined') {
+                songs.push({ id: songId, name: songName });
+            }
+        });
+
+        console.log("Saving songs to local storage:", songs);
+        localStorage.setItem('songList', JSON.stringify(songs)); // Set local storage with song list
+    }
+
+    // Function to toggle the visibility of the remove selected button
+    function toggleRemoveSelectedButton() {
+        const songList = document.getElementById('songList');
+        const removeSelectedButton = document.getElementById('removeSelectedButton');
+        const checkboxes = songList.querySelectorAll('.song-checkbox');
+        let anyChecked = false;
+
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                anyChecked = true;
+            }
+        });
+
+        if (anyChecked) {
+            removeSelectedButton.style.display = 'inline-block';
+        } else {
+            removeSelectedButton.style.display = 'none';
+        }
+    }
+
+    // Wait for DOM content to load before executing
+    document.addEventListener('DOMContentLoaded', function() {
+        const songListButton = document.getElementById('songListButton');
+        const songListContainer = document.getElementById('songListContainer');
+        const shareButton = document.getElementById('shareButton');
+        const removeSelectedButton = document.getElementById('removeSelectedButton');
+
+        // Toggle song list container visibility
+        songListButton.addEventListener('click', function() {
+            songListContainer.style.display = songListContainer.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Share button functionality to email the song list as JSON
+        shareButton.addEventListener('click', function() {
+            const songList = document.getElementById('songList');
+            const songItems = songList.querySelectorAll('.song-list-item');
+            const songs = [];
+
+            songItems.forEach(item => {
+                const songId = item.getAttribute('data-id');
+                const songName = item.querySelector('.song-name').textContent.trim();
+                if (songId && songId !== 'undefined') {
+                    songs.push({ id: songId, name: songName });
+                }
+            });
+
+            const jsonContent = JSON.stringify(songs, null, 2); // Create formatted JSON string
+
+            // Encode the JSON content to be URL-safe
+            const encodedJsonContent = encodeURIComponent(jsonContent);
+
+            // Create a mailto link
+            const email = 'recipient@example.com'; // Replace with the default recipient or leave empty
+            const subject = 'Your Song List';
+            const body = `Here is your song list:\n\n${encodedJsonContent}`;
+            const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodedJsonContent}`;
+
+            // Open the user's default email client
+            window.location.href = mailtoLink;
+        });
+
+        importButton.addEventListener('click', function() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+
+        input.onchange = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.readAsText(file);
+
+            reader.onload = function(event) {
+                const content = event.target.result;
+                try {
+                    const songs = JSON.parse(content);
+                    clearSongListContainer(); // Clear existing song list
+                    songs.forEach(song => {
+                        addSongToList(song.id, song.name); // Add songs to the list
+                    });
+                    updateLocalStorage(); // Update local storage with imported songs
+                } catch (error) {
+                    alert('Error importing song list.');
+                    console.error('Error importing song list:', error);
+                }
+            };
+        };
+
+        input.click(); // Trigger file input dialog
+    });
+
+
+        // Function to remove selected songs from the list
+        removeSelectedButton.addEventListener('click', function() {
+            const songList = document.getElementById('songList');
+            const checkboxes = songList.querySelectorAll('.song-checkbox');
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkbox.parentNode.remove();
+                }
+            });
+
+            updateLocalStorage();
+            toggleRemoveSelectedButton();
+        });
+
+        // Function to load songs from local storage
+        function loadFromLocalStorage() {
+            const songListStr = localStorage.getItem('songList');
+            console.log("Loading songs from local storage:", songListStr);
+
+            if (songListStr) {
+                const songs = JSON.parse(songListStr);
+                songs.forEach(song => {
+                    addSongToList(song.id, song.name, true); // Use song.id and song.name from local storage, skip update
+                });
+                toggleRemoveSelectedButton(); // Check if remove selected button should be displayed
+            }
+        }
+
+        // Function to get song ID from URL
+        function getSongIdFromUrl() {
+            const pathArray = window.location.pathname.split('/');
+            return pathArray[pathArray.length - 1]; // Assuming song ID is the last part of the URL
+        }
+
+        // Function to handle adding a song from lyrics page
+        function handleAddSongFromLyricsPage() {
+            const songId = getSongIdFromUrl(); // Get song ID from current URL
+            const songName = document.querySelector('h1').textContent.trim(); // Get song name from <h1> tag
+
+            // Add current song to the list only if it's not already there
+            if (songId && songName && !isCurrentSongInList(songId)) {
+                addSongToList(songId, songName);
+            } else if (isCurrentSongInList(songId)) {
+                alert("Song is already in the list.");
+            }
+        }
+
+        // Function to check if the current song is in the list
+        function isCurrentSongInList(songId) {
+            const songList = document.getElementById('songList');
+            const songItems = songList.querySelectorAll('.song-list-item');
+            let isInList = false;
+
+            songItems.forEach(item => {
+                const id = item.getAttribute('data-id');
+                if (id === songId) {
+                    isInList = true;
+                }
+            });
+
+            return isInList;
+        }
+
+        // Function to clear the song list container
+        function clearSongListContainer() {
+            const songList = document.getElementById('songList');
+            while (songList.firstChild) {
+                songList.removeChild(songList.firstChild);
+            }
+        }
+
+        // Function to reload the song list container from local storage
+        function reloadSongListContainer() {
+            clearSongListContainer();
+            loadFromLocalStorage();
+        }
+
+        loadFromLocalStorage(); // Load songs from local storage on page load
+        // Bind handleAddSongFromLyricsPage to + button click on lyrics page
+        const addButton = document.getElementById('addButton'); // Replace with actual ID or selector of the + button
+        if (addButton) {
+            addButton.addEventListener('click', function() {
+                reloadSongListContainer();
+                handleAddSongFromLyricsPage();
+                reloadSongListContainer();
+            });
+        }
+    });
+</script>
