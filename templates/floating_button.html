@@ -52,7 +52,7 @@
     }
 </style>
 
-<button class="floating-button" id="songListButton">Song List</button>
+<button class="floating-button" id="songListButton">SL</button>
 
 <div class="song-list-container" id="songListContainer">
     <!-- Add your song list content here -->
@@ -60,8 +60,7 @@
     <ul id="songList">
         <!-- Song list items will be dynamically added here -->
     </ul>
-    <button id="removeSelectedButton" class="song-list-button">Remove Selected</button>
-    <button id="shareButton" class="song-list-button">Share</button>
+    <button id="shareButton" class="song-list-button">Export</button>
     <button id="importButton" class="song-list-button">Import</button>
 </div>
 
@@ -88,7 +87,7 @@
             event.stopPropagation(); // Prevent navigation when clicking remove button
             listItem.remove();
             updateLocalStorage(); // Update local storage after removing a song
-            toggleRemoveSelectedButton(); // Check if remove selected button should be displayed
+
         });
 
         // Append checkbox, song name, and remove button to list item
@@ -107,7 +106,7 @@
 
         if (!skipUpdate) {
             updateLocalStorage(); // Update local storage after adding a song
-            toggleRemoveSelectedButton(); // Check if remove selected button should be displayed
+
         }
     }
 
@@ -131,25 +130,7 @@
         localStorage.setItem('songList', JSON.stringify(songs)); // Set local storage with song list
     }
 
-    // Function to toggle the visibility of the remove selected button
-    function toggleRemoveSelectedButton() {
-        const songList = document.getElementById('songList');
-        const removeSelectedButton = document.getElementById('removeSelectedButton');
-        const checkboxes = songList.querySelectorAll('.song-checkbox');
-        let anyChecked = false;
 
-        checkboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                anyChecked = true;
-            }
-        });
-
-        if (anyChecked) {
-            removeSelectedButton.style.display = 'inline-block';
-        } else {
-            removeSelectedButton.style.display = 'none';
-        }
-    }
 
     // Wait for DOM content to load before executing
     document.addEventListener('DOMContentLoaded', function() {
@@ -163,7 +144,7 @@
             songListContainer.style.display = songListContainer.style.display === 'none' ? 'block' : 'none';
         });
 
-        // Share button functionality to email the song list as JSON
+        // Share button functionality to download the song list as JSON and provide instructions for emailing
         shareButton.addEventListener('click', function() {
             const songList = document.getElementById('songList');
             const songItems = songList.querySelectorAll('.song-list-item');
@@ -178,19 +159,21 @@
             });
 
             const jsonContent = JSON.stringify(songs, null, 2); // Create formatted JSON string
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
 
-            // Encode the JSON content to be URL-safe
-            const encodedJsonContent = encodeURIComponent(jsonContent);
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'song_list.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
-            // Create a mailto link
-            const email = 'recipient@example.com'; // Replace with the default recipient or leave empty
-            const subject = 'Your Song List';
-            const body = `Here is your song list:\n\n${encodedJsonContent}`;
-            const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodedJsonContent}`;
-
-            // Open the user's default email client
-            window.location.href = mailtoLink;
+            // Instructions for the user to email the downloaded file
+            alert('The song list has been downloaded as a JSON file. Please attach the file to your email manually.');
         });
+
 
         importButton.addEventListener('click', function() {
         const input = document.createElement('input');
@@ -224,20 +207,7 @@
     });
 
 
-        // Function to remove selected songs from the list
-        removeSelectedButton.addEventListener('click', function() {
-            const songList = document.getElementById('songList');
-            const checkboxes = songList.querySelectorAll('.song-checkbox');
 
-            checkboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    checkbox.parentNode.remove();
-                }
-            });
-
-            updateLocalStorage();
-            toggleRemoveSelectedButton();
-        });
 
         // Function to load songs from local storage
         function loadFromLocalStorage() {
@@ -249,7 +219,7 @@
                 songs.forEach(song => {
                     addSongToList(song.id, song.name, true); // Use song.id and song.name from local storage, skip update
                 });
-                toggleRemoveSelectedButton(); // Check if remove selected button should be displayed
+
             }
         }
 
