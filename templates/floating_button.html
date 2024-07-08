@@ -26,6 +26,26 @@
         box-shadow: 0 4px 16px rgba(0,0,0,0.1);
         padding: 20px;
         display: none; /* Initially hidden */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Center the h2 element */
+    .song-list-container h2 {
+        text-align: center;
+        width: 100%;
+    }
+
+    /* CSS styles for the unordered list */
+    .song-list-container ul {
+        list-style: none; /* Remove default list styling */
+        padding: 0; /* Remove default padding */
+        margin: 0; /* Remove default margin */
+        width: 100%; /* Make the list take the full width of the container */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     /* CSS styles for list items */
@@ -38,6 +58,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        width: 100%;
+        max-width: 300px;
     }
 
     /* CSS styles for buttons inside the song list container */
@@ -50,18 +72,28 @@
         cursor: pointer;
         margin-left: 10px;
     }
+
+    /* Center the buttons at the bottom */
+    .button-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 20px;
+    }
 </style>
+
 
 <button class="floating-button" id="songListButton">SL</button>
 
 <div class="song-list-container" id="songListContainer">
-    <!-- Add your song list content here -->
     <h2>Your Song List</h2>
     <ul id="songList">
         <!-- Song list items will be dynamically added here -->
     </ul>
-    <button id="shareButton" class="song-list-button">Export</button>
-    <button id="importButton" class="song-list-button">Import</button>
+    <div class="button-container">
+        <button id="shareButton" class="song-list-button">Export</button>
+        <button id="importButton" class="song-list-button">Import</button>
+    </div>
 </div>
 
 <script>
