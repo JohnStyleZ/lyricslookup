@@ -1,89 +1,187 @@
 <style>
-    /* CSS styles for the floating button */
-    .floating-button {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 1000; /* Ensure it's above other content */
-        background-color: #007aff;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        padding: 15px;
-        font-size: 1.2em;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
+/* CSS styles for the floating button */
+.floating-button {
+    position: fixed;
+    z-index: 1000; /* Ensure it's above other content */
+    background-color: #007aff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 15px;
+    font-size: 1.2em;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
 
-    /* CSS styles for the song list container */
-    .song-list-container {
-        position: fixed;
-        bottom: 20px; /* Adjust as needed */
-        right: 80px; /* Adjust as needed */
-        z-index: 999; /* Ensure it's below the floating button */
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        padding: 20px;
-        display: none; /* Initially hidden */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
+.top-right {
+    top: 20px; /* Adjust as needed */
+    right: 20px; /* Adjust as needed */
+}
 
-    /* Center the h2 element */
-    .song-list-container h2 {
-        text-align: center;
-        width: 100%;
-    }
+.bottom-right {
+    bottom: 20px; /* Adjust as needed */
+    right: 20px; /* Adjust as needed */
+}
 
-    /* CSS styles for the unordered list */
-    .song-list-container ul {
-        list-style: none; /* Remove default list styling */
-        padding: 0; /* Remove default padding */
-        margin: 0; /* Remove default margin */
-        width: 100%; /* Make the list take the full width of the container */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
+/* CSS styles for the song list container */
+.song-list-container {
+    position: fixed;
+    bottom: 20px; /* Adjust as needed */
+    right: 80px; /* Adjust as needed */
+    z-index: 999; /* Ensure it's below the floating button */
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    padding: 20px;
+    display: none; /* Initially hidden */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-    /* CSS styles for list items */
-    .song-list-item {
-        margin-bottom: 10px;
-        padding: 8px 12px;
-        background-color: #f5f5f7;
-        border-radius: 5px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        max-width: 300px;
-    }
+/* Center the h2 element */
+.song-list-container h2 {
+    text-align: center;
+    width: 100%;
+}
 
-    /* CSS styles for buttons inside the song list container */
-    .song-list-button {
-        padding: 8px 12px;
-        background-color: #007aff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-left: 10px;
-    }
+/* CSS styles for the unordered list */
+.song-list-container ul {
+    list-style: none; /* Remove default list styling */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+    width: 100%; /* Make the list take the full width of the container */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-    /* Center the buttons at the bottom */
-    .button-container {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        margin-top: 20px;
-    }
+/* CSS styles for list items */
+.song-list-item {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background-color: #f5f5f7;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 300px;
+}
+
+/* CSS styles for buttons inside the song list container */
+.song-list-button {
+    padding: 8px 12px;
+    background-color: #007aff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+/* Center the buttons at the bottom */
+.button-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Dark mode styles */
+.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.dark-mode a {
+    color: #bb86fc;
+}
+
+/* Additional dark mode styles for other elements */
+.dark-mode .top-right,
+.dark-mode .bottom-right {
+    background-color: #333;
+    color: #fff;
+}
+
+.dark-mode .top-right:hover,
+.dark-mode .bottom-right:hover {
+    background-color: #555;
+}
+
+/* Additional dark mode styles for containers */
+.dark-mode .song-list-container {
+    background-color: #1f1f1f;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.dark-mode .song-list-container h2 {
+    color: #fff;
+}
+
+.dark-mode .song-list-item {
+    background-color: #333;
+    color: #fff;
+}
+
+.dark-mode .song-list-button {
+    background-color: #007aff;
+    color: #fff;
+}
+
+.dark-mode .song-list-button:hover {
+    background-color: #0056b3;
+}
+
+.dark-mode .floating-button {
+    background-color: #333;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode styles for lyrics container */
+.dark-mode .lyrics-container{
+    background-color: #121212;
+    color: #e0e0e0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.dark-mode .container {
+    background-color: #333;
+    color: #fff;
+    /* Additional styles as needed */
+}
+/* Dark mode styles for lyrics container */
+.dark-mode .container .results-list{
+    background-color: #121212;
+    color: #e0e0e0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+/* Dark mode styles for lyrics container */
+.dark-mode .container .artists-list{
+    background-color: #121212;
+    color: #e0e0e0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.dark-mode .container .text-size-selector{
+    background-color: #333;
+    color: #e0e0e0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
 </style>
 
-
-<button class="floating-button" id="songListButton">SL</button>
+<button id="darkModeButton" class="floating-button top-right">🌙</button>
+<button class="floating-button bottom-right" id="songListButton">📒</button>
 
 <div class="song-list-container" id="songListContainer">
     <h2>Your Song List</h2>
@@ -171,6 +269,25 @@
         const shareButton = document.getElementById('shareButton');
         const removeSelectedButton = document.getElementById('removeSelectedButton');
 
+        const darkModeButton = document.getElementById('darkModeButton');
+        const darkModeClass = 'dark-mode';
+
+        // Load the dark mode preference from localStorage
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add(darkModeClass);
+        }
+
+        // Toggle dark mode
+        darkModeButton.addEventListener('click', () => {
+            document.body.classList.toggle(darkModeClass);
+
+            // Save the preference to localStorage
+            if (document.body.classList.contains(darkModeClass)) {
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                localStorage.removeItem('darkMode');
+            }
+        });
         // Toggle song list container visibility
         songListButton.addEventListener('click', function() {
             songListContainer.style.display = songListContainer.style.display === 'none' ? 'block' : 'none';
