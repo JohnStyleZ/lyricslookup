@@ -116,5 +116,19 @@
             {% else %}
                 <p>No results found.</p>
             {% endif %}
+        <!-- Include floating button and song list container -->
+        {% include 'floating_button.html' %}
+
+        <!-- Song list container (initially hidden) -->
+        <div class="song-list-container" id="songListContainer" style="display: none;">
+            <!-- Add your song list content here -->
+            <h2>Your Song List</h2>
+            <ul>
+                <li>Song 1</li>
+                <li>Song 2</li>
+                <!-- Add more dynamically or through your backend -->
+            </ul>
+            <button id="shareButton">Share</button>
+        </div>        
 </body>
 </html>
