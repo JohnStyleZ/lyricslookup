@@ -267,7 +267,37 @@
                 document.querySelector(".fullscreen-button").style.display = "none";
             }
         }
+        function addToSongList() {
+            // Function to extract song ID from URL
+            function getSongIdFromUrl() {
+                var pathArray = window.location.pathname.split('/');
+                return pathArray[pathArray.length - 1]; // Assuming song ID is the last part of the URL
+            }
 
+            var songId = getSongIdFromUrl(); // Get the song ID from the current URL
+            var songListContainer = document.getElementById("songListContainer");
+            var songList = songListContainer.querySelector("ul");
+
+            // Check if the song is already in the list to avoid duplicates (optional)
+            var existingSong = songList.querySelector("li[data-id='" + songId + "']");
+            if (existingSong) {
+                alert("Song is already in the list.");
+                return;
+            }
+
+            // Create a new list item for the song
+            var newSongItem = document.createElement("li");
+            newSongItem.textContent = "{{ song_title }} by {{ artist }}"; // Display song title and artist
+            newSongItem.setAttribute("data-id", songId); // Add a data attribute for identification
+
+            // Add click event to navigate back to the same lyrics page
+            newSongItem.addEventListener("click", function() {
+                window.location.href = "/lyrics/" + songId; // Adjust URL structure as per your route
+            });
+
+            // Append the new song item to the song list
+            songList.appendChild(newSongItem);
+        }
 
         // Ensure karaoke mode is off on page load and all controllers are hidden
         window.onload = function() {
