@@ -1,6 +1,8 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lyrics Search</title>
@@ -48,6 +50,7 @@
     </style>
 </head>
 <body>
+
     <div class="container">
         <h1>Lyrics Search</h1>
         <form action="{{ url_for('search_lyrics') }}" method="post">
@@ -55,5 +58,22 @@
             <input type="submit" value="Search">
         </form>
     </div>
+
+    <!-- Include floating button and song list container -->
+    {% include 'floating_button.html' %}
+
+    <!-- Song list container (initially hidden) -->
+    <div class="song-list-container" id="songListContainer" style="display: none;">
+        <!-- Add your song list content here -->
+        <h2>Your Song List</h2>
+        <ul>
+            <li>Song 1</li>
+            <li>Song 2</li>
+            <!-- Add more dynamically or through your backend -->
+        </ul>
+        <button id="shareButton">Share</button>
+    </div>
+
+
 </body>
 </html>
