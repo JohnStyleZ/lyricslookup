@@ -32,12 +32,6 @@
             padding-bottom: 10px;
             display: flex;
         }
-        .result img, .artist img {
-            width: 60px;
-            height: 60px;
-            margin-right: 15px;
-            border-radius: 5px;
-        }
         .result-info, .artist-info {
             flex-grow: 1;
         }
@@ -69,23 +63,40 @@
         a:hover {
             text-decoration: underline;
         }
+        .publish-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007aff;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .publish-button:hover {
+            background-color: #005bb5;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="results-list">
             <h1>Search Results for "{{ query }}"</h1>
+            <a href="{{ url_for('submit_lyrics') }}" class="publish-button">Publish New Lyrics</a>
             <h2>Songs</h2>
             {% if results %}
                 {% for result in results %}
                     <div class="result">
-                        <img src="{{ result.image_url }}" alt="{{ result.title }} cover">
                         <div class="result-info">
                             <div class="result-title">{{ result.title }}</div>
                             <div class="result-artist">{{ result.artist }}</div>
                             <div class="result-views">{{ result.views }} views</div>
                         </div>
-                        <a href="{{ url_for('get_lyrics', song_id=result.id) }}">View Lyrics</a>
+                        {% if result.source == 'musixmatch' %}
+                            <a href="{{ url_for('get_lyrics', song_id=result.id, source='musixmatch', title=result.title, artist=result.artist) }}">View Lyrics</a>
+                        {% else %}
+                            <a href="{{ url_for('get_lyrics', song_id=result.id) }}">View Lyrics</a>
+                        {% endif %}
                     </div>
                 {% endfor %}
             {% else %}
@@ -101,10 +112,9 @@
                     {% set artist = result.artist %}
                     {% if artist not in artists and artist_count < 3 %}
                         {% set artist_count = artist_count + 1 %}
-                        {% set artists = artists.update({artist: {'image_url': result.image_url}}) %}
+                        {% set artists = artists.update({artist: {}}) %}
                         <div class="artist">
                             <a href="{{ url_for('artist_songs', artist=artist) }}" class="artist-link">
-                                <img src="{{ result.image_url }}" alt="{{ artist }} image">
                                 <div class="artist-info">
                                     <div class="artist-name">{{ artist }}</div>
                                     <!-- You can add more details here if needed -->
@@ -116,19 +126,21 @@
             {% else %}
                 <p>No results found.</p>
             {% endif %}
+        </div>
         <!-- Include floating button and song list container -->
         {% include 'floating_button.html' %}
+    </div>
 
-        <!-- Song list container (initially hidden) -->
-        <div class="song-list-container" id="songListContainer" style="display: none;">
-            <!-- Add your song list content here -->
-            <h2>Your Song List</h2>
-            <ul>
-                <li>Song 1</li>
-                <li>Song 2</li>
-                <!-- Add more dynamically or through your backend -->
-            </ul>
-            <button id="shareButton">Share</button>
-        </div>        
+    <!-- Song list container (initially hidden) -->
+    <div class="song-list-container" id="songListContainer" style="display: none;">
+        <!-- Add your song list content here -->
+        <h2>Your Song List</h2>
+        <ul>
+            <li>Song 1</li>
+            <li>Song 2</li>
+            <!-- Add more dynamically or through your backend -->
+        </ul>
+        <button id="shareButton">Share</button>
+    </div>
 </body>
 </html>
