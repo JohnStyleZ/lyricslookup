@@ -90,6 +90,15 @@
         .start-stop-button:hover {
             background-color: #45a049;
         }
+        .button-container {
+            display: flex;
+            justify-content: center; /* Center the karaoke mode button */
+            align-items: center;     /* Vertically center the buttons */
+            margin-bottom: 20px;     /* Adjust as needed */
+        }
+        .add-button-container {
+            margin-left: auto; /* Pushes the + button to the right */
+        }
         .karaoke-mode-button {
             background-color: #f39c12;
             border: none;
@@ -102,6 +111,7 @@
             margin-bottom: 10px;
             cursor: pointer;
             border-radius: 5px;
+            margin-right: 10px; /* Space between the karaoke button and the + button */
         }
         .karaoke-mode-button:hover {
             background-color: #e67e22;
@@ -158,38 +168,41 @@
             text-align: center;
             position: relative;
             padding: 50% 0; /* Add margin top and bottom */
+            scroll-behavior: smooth;
         }
-        /*.highlight {
-            font-size: 210%;
-            -webkit-transition: all 2.25s;
-            word-wrap: break-word;
-            transition: all 2.25s;
-        }*/
+        .highlight, .dim {
+            display: block; /* Ensures margin affects the whole line */
+            margin-bottom: 20px; /* Adjust this value to increase/decrease spacing */
+            scroll-behavior: smooth;
+            transition: all 0.25s;
+
+        }
 
         .dim {
             color: #666;
             font-size: 100%;
-
-        }
-        .fade-out-text {
-        animation: fadeIn 1s;
-        -webkit-animation: fadeIn 1s;
-        -moz-animation: fadeIn 1s;
-        -o-animation: fadeIn 1s;
-        -ms-animation: fadeIn 1s;
+            transition: transform 0.5s ease-in-out;
         }
 
 
         .fade-in-text {
-
+            animation: zoom-in 0.5s ease-in-out; /* Initial zoom level */
             font-size: 150%;
+            transition: font-size 10.25s;
             animation: fadeIn 1s;
             -webkit-animation: fadeIn 1s;
             -moz-animation: fadeIn 1s;
             -o-animation: fadeIn 1s;
             -ms-animation: fadeIn 1s;
         }
-
+        @keyframes zoom-in {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.1); /* Adjust this value to change the zoom level */
+            }
+        }
         @keyframes fadeIn {
             0% { opacity: 0; }
             100% { opacity: 1; }
@@ -436,10 +449,10 @@
 
             if (lyricsContainer.classList.contains("karaoke-mode")) {
                 lyricsContainer.classList.remove("karaoke-mode");
-                karaokeButton.innerText = "Karaoke Mode Off";
+                karaokeButton.innerText = "Pro Mode Off";
             } else {
                 lyricsContainer.classList.add("karaoke-mode");
-                karaokeButton.innerText = "Karaoke Mode On";
+                karaokeButton.innerText = "Pro Mode On";
             }
         }
 
@@ -449,7 +462,7 @@
             if (lyricsContainer.classList.contains("karaoke-mode")) {
                 lyricsContainer.classList.remove("karaoke-mode");
             }
-            karaokeButton.innerText = "Karaoke Mode Off";
+            karaokeButton.innerText = "Pro Mode Off";
 
             // Set up event listeners to detect user activity
             document.addEventListener('mousemove', resetTimeout);
@@ -463,10 +476,12 @@
 <body>
     <div class="container">
         <h1>{{ song_title }} by {{ artist }}</h1>
-        <button class="karaoke-mode-button" id="karaoke-mode-btn" onclick="toggleKaraokeMode()">Karaoke Mode Off</button>
-        <span style="float: right; margin-left: 10px;">
-            <button id="addButton" onclick="addToSongList()">+</button>
-        </span>
+        <div class="button-container">
+            <button class="karaoke-mode-button" id="karaoke-mode-btn" onclick="toggleKaraokeMode()">Pro Mode Off</button>
+            <span class="add-button-container">
+                <button id="addButton" onclick="addToSongList()">+</button>
+            </span>
+        </div>
         <div class="lyrics-container">
             <div class="text-size-selector">
                 <label for="text-size">Text Size: </label>
