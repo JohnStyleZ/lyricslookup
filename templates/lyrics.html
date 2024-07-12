@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <title>{{ song_title }} by {{ artist }} - Lyrics</title>
     <style>
         body {
@@ -33,7 +34,7 @@
             background-color: #f9f9f9;
             padding: 20px;
             border-radius: 5px;
-            border: 1px solid #ddd;
+            border: 1px solid #000000;
             text-align: center;
             margin-bottom: 20px;
             max-height: 60vh;
@@ -158,6 +159,87 @@
             position: relative;
             padding: 50% 0; /* Add margin top and bottom */
         }
+        /*.highlight {
+            font-size: 210%;
+            -webkit-transition: all 2.25s;
+            word-wrap: break-word;
+            transition: all 2.25s;
+        }*/
+
+        .dim {
+            color: #666;
+            font-size: 100%;
+
+        }
+        .fade-out-text {
+        animation: fadeIn 1s;
+        -webkit-animation: fadeIn 1s;
+        -moz-animation: fadeIn 1s;
+        -o-animation: fadeIn 1s;
+        -ms-animation: fadeIn 1s;
+        }
+
+
+        .fade-in-text {
+
+            font-size: 150%;
+            animation: fadeIn 1s;
+            -webkit-animation: fadeIn 1s;
+            -moz-animation: fadeIn 1s;
+            -o-animation: fadeIn 1s;
+            -ms-animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @-moz-keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @-webkit-keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @-o-keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @-ms-keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes swing {
+        0% {
+            transform: rotate(0deg);
+        }
+        20% {
+            transform: rotate(15deg);
+        }
+        40% {
+            transform: rotate(-10deg);
+        }
+        60% {
+            transform: rotate(5deg);
+        }
+        80% {
+            transform: rotate(-5deg);
+        }
+        100% {
+            transform: rotate(0deg);
+        }
+    }
+
+    .swing {
+        display: inline-block;
+        animation: swing 0.5s ease-in-out; /* Adjust duration as needed */
+    }
+
     </style>
     <script>
         var autoScrollInterval = null;
@@ -219,45 +301,68 @@
             var containerHeight = lyricsScrollContainer.clientHeight;
             var lyricsHeight = lyricsContainer.clientHeight;
 
+            var lastUpdatedIndex = -1;
+
             function scroll() {
                 var currentTime = performance.now() - startTime;
-
-                // Log current time and displayed lyrics
-                console.log("Current Time: " + currentTime.toFixed(2) + " ms");
 
                 // Find the correct line to display based on currentTime
                 while (currentIndex < parsedLines.length && parsedLines[currentIndex].timecodes[0] <= currentTime) {
                     currentIndex++;
                 }
 
-                // Prepare HTML for lyrics with highlighting
-                var html = '';
-                for (var i = 0; i < parsedLines.length; i++) {
-                    if (i === currentIndex - 1) {
-                        html += '<span class="highlight">' + parsedLines[i].lyrics + '</span><br>';
-                    } else {
-                        html += '<span class="dim">' + parsedLines[i].lyrics + '</span><br>';
-                    }
-                }
-                lyricsContainer.innerHTML = html;
-
-                // Calculate where to scroll to center the highlighted line vertically
-                var currentLine = lyricsContainer.querySelector('.highlight');
-                if (currentLine) {
-                    var lineOffsetTop = currentLine.offsetTop;
-                    var scrollTo = lineOffsetTop - (containerHeight / 2) + (currentLine.clientHeight / 2);
-                    lyricsScrollContainer.scrollTop = scrollTo;
+                if (currentIndex === lastUpdatedIndex) {
+                    // No update needed if the index hasn't changed
+                    autoScrollInterval = requestAnimationFrame(scroll);
+                    return;
                 }
 
-                // Check if we have reached the end of lyrics
+                // Update lyrics display
+                updateLyricsDisplay(parsedLines, currentIndex);
+
+                lastUpdatedIndex = currentIndex;
+
                 if (currentIndex >= parsedLines.length) {
                     console.log("End of lyrics reached.");
                     return;
                 }
 
-                // Request next frame
                 autoScrollInterval = requestAnimationFrame(scroll);
             }
+
+            function updateLyricsDisplay(parsedLines, currentIndex) {
+                var lyricsContainer = document.querySelector('.lyrics');
+                var lyricsScrollContainer = document.querySelector('.lyrics-container');
+                var fragment = document.createDocumentFragment();
+
+                // Create and update lyrics with highlighting and swinging effect
+                for (var i = 0; i < parsedLines.length; i++) {
+                    var lineElement = document.createElement('span');
+                    if (i === currentIndex - 1) {
+                        lineElement.className = 'highlight fade-in-text'; // Add swing class for animation
+                    } else {
+                        lineElement.className = 'dim';
+                    }
+                    lineElement.textContent = parsedLines[i].lyrics;
+                    fragment.appendChild(lineElement);
+                    fragment.appendChild(document.createElement('br'));
+                }
+
+                // Clear the container and append new content
+                lyricsContainer.innerHTML = '';
+                lyricsContainer.appendChild(fragment);
+
+                // Scroll to the highlighted line
+                var currentLine = lyricsContainer.querySelector('.highlight');
+                if (currentLine) {
+                    var lineOffsetTop = currentLine.offsetTop;
+                    var containerHeight = lyricsScrollContainer.clientHeight;
+                    var scrollTo = lineOffsetTop - (containerHeight / 2) + (currentLine.clientHeight / 2);
+                    lyricsScrollContainer.scrollTop = scrollTo;
+                }
+            }
+
+
 
             // Start scrolling
             if (!isAutoScrolling) {
