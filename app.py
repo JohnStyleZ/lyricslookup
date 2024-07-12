@@ -161,8 +161,8 @@ def get_lyrics(song_id):
             return render_template('lyrics.html', 
                                    artist=artist,
                                    song_title=title,
-                                   lyrics=lyrics_text,
-                                   lyrics_with_timecodes=lyrics_text)
+                                   lyrics='\n' + lyrics_text,
+                                   lyrics_with_timecodes='\n' + lyrics_text)
         else:
             return "Lyrics not found in lrc.cx", 404
     else:
@@ -178,8 +178,8 @@ def get_lyrics(song_id):
         return render_template('lyrics.html', 
                                artist=data['artistName'],
                                song_title=data['trackName'],
-                               lyrics=data['syncedLyrics'],
-                               lyrics_with_timecodes=data['syncedLyrics'])
+                               lyrics='\n' + data['syncedLyrics'],
+                               lyrics_with_timecodes='\n' + data['syncedLyrics'])
 
 @app.route('/artist/<artist>')
 def artist_songs(artist):
