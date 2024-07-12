@@ -149,11 +149,30 @@
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
+
+.dark-mode .container {
+    background-color: #121212;
+    color: #e0e0e0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+/* Dark mode styles for lyrics container */
+.dark-mode .container .song-list{
+    background-color: #121212;
+    color: #e0e0e0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
 .dark-mode .container {
     background-color: #333;
     color: #fff;
     /* Additional styles as needed */
 }
+
+
 /* Dark mode styles for lyrics container */
 .dark-mode .container .results-list{
     background-color: #121212;
@@ -178,6 +197,20 @@
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
+
+.highlight {
+            color: rgb(0, 0, 0);
+        }
+.dim {
+    color: grey;
+}
+
+.dark-mode .highlight {
+            color: white;
+        }
+.dark-mode .dim {
+    color: grey;
+}
 </style>
 
 <button id="darkModeButton" class="floating-button top-right">🌙</button>
@@ -195,70 +228,76 @@
 </div>
 
 <script>
-    // Function to add a song to the list
-    function addSongToList(songId, songName, skipUpdate = false) {
-        const songList = document.getElementById('songList');
+        // Function to add a song to the list
+        function addSongToList(songId, songName, songUrl, skipUpdate = false) {
+            const songList = document.getElementById('songList');
 
-        // Create list item for the song
-        const listItem = document.createElement('li');
-        listItem.className = 'song-list-item';
-        listItem.setAttribute('data-id', songId); // Store song ID as a data attribute
+            // Extract path and query string after the domain
+            const urlPath = new URL(songUrl).pathname + new URL(songUrl).search; // Include query parameters
 
-        // Create element for song name
-        const songNameElement = document.createElement('span');
-        songNameElement.textContent = songName;
-        songNameElement.className = 'song-name';
+            // Create list item for the song
+            const listItem = document.createElement('li');
+            listItem.className = 'song-list-item';
+            listItem.setAttribute('data-id', songId); // Store song ID as a data attribute
+            listItem.setAttribute('data-url-path', urlPath); // Store URL path with query parameters
 
-        // Create remove button
-        const removeButton = document.createElement('button');
-        removeButton.textContent = 'Remove';
-        removeButton.className = 'song-list-button remove-button';
-        removeButton.addEventListener('click', function(event) {
-            event.stopPropagation(); // Prevent navigation when clicking remove button
-            listItem.remove();
-            updateLocalStorage(); // Update local storage after removing a song
+            // Create element for song name
+            const songNameElement = document.createElement('span');
+            songNameElement.textContent = songName;
+            songNameElement.className = 'song-name';
 
-        });
+            // Create remove button
+            const removeButton = document.createElement('button');
+            removeButton.textContent = 'Remove';
+            removeButton.className = 'song-list-button remove-button';
+            removeButton.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent navigation when clicking remove button
+                listItem.remove();
+                updateLocalStorage(); // Update local storage after removing a song
+            });
 
-        // Append checkbox, song name, and remove button to list item
+            // Append song name and remove button to list item
+            listItem.appendChild(songNameElement);
+            listItem.appendChild(removeButton);
 
-        listItem.appendChild(songNameElement);
-        listItem.appendChild(removeButton);
+            // Add click event to navigate to lyrics page
+            songNameElement.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent remove button click event
+                const fullUrl = `${window.location.origin}${urlPath}`; // Construct the full URL with the current domain
+                window.location.href = fullUrl; // Use the constructed URL
+            });
 
-        // Add click event to navigate to lyrics page
-        songNameElement.addEventListener('click', function(event) {
-            event.stopPropagation(); // Prevent remove button click event
-            window.location.href = `/lyrics/${songId}`; // Replace with your actual route
-        });
+            // Append the list item to the song list
+            songList.appendChild(listItem);
 
-        // Append the list item to the song list
-        songList.appendChild(listItem);
-
-        if (!skipUpdate) {
-            updateLocalStorage(); // Update local storage after adding a song
-
-        }
-    }
-
-    // Function to update local storage with current song list
-    function updateLocalStorage() {
-        console.log("Updating local storage");
-        const songList = document.getElementById('songList');
-        const songItems = songList.querySelectorAll('.song-list-item');
-        const songs = [];
-
-        songItems.forEach(item => {
-            const songId = item.getAttribute('data-id');
-            const songName = item.querySelector('.song-name').textContent.trim();
-            // Check if songId is valid before adding to array
-            if (songId && songId !== 'undefined') {
-                songs.push({ id: songId, name: songName });
+            if (!skipUpdate) {
+                updateLocalStorage(); // Update local storage after adding a song
             }
-        });
+        }
 
-        console.log("Saving songs to local storage:", songs);
-        localStorage.setItem('songList', JSON.stringify(songs)); // Set local storage with song list
-    }
+
+
+        // Function to update local storage with current song list
+        function updateLocalStorage() {
+            console.log("Updating local storage");
+            const songList = document.getElementById('songList');
+            const songItems = songList.querySelectorAll('.song-list-item');
+            const songs = [];
+
+            songItems.forEach(item => {
+                const songId = item.getAttribute('data-id');
+                const songName = item.querySelector('.song-name').textContent.trim();
+                const urlPath = item.getAttribute('data-url-path'); // Retrieve the URL path with query parameters
+
+                // Check if songId, songName, and urlPath are valid before adding to array
+                if (songId && songName && urlPath) {
+                    songs.push({ id: songId, name: songName, urlPath: urlPath });
+                }
+            });
+
+            console.log("Saving songs to local storage:", songs);
+            localStorage.setItem('songList', JSON.stringify(songs)); // Set local storage with song list
+        }
 
 
 
@@ -366,11 +405,15 @@
             if (songListStr) {
                 const songs = JSON.parse(songListStr);
                 songs.forEach(song => {
-                    addSongToList(song.id, song.name, true); // Use song.id and song.name from local storage, skip update
+                    const songUrl = `${window.location.origin}${song.urlPath}`; // Reconstruct the full URL with the current domain
+                    addSongToList(song.id, song.name, songUrl, true); // Use song.id, song.name, and songUrl from local storage, skip update
                 });
-
             }
         }
+
+
+
+
 
         // Function to get song ID from URL
         function getSongIdFromUrl() {
@@ -382,14 +425,16 @@
         function handleAddSongFromLyricsPage() {
             const songId = getSongIdFromUrl(); // Get song ID from current URL
             const songName = document.querySelector('h1').textContent.trim(); // Get song name from <h1> tag
+            const songUrl = window.location.href; // Use current page URL as the song URL
 
             // Add current song to the list only if it's not already there
-            if (songId && songName && !isCurrentSongInList(songId)) {
-                addSongToList(songId, songName);
+            if (songId && songName && songUrl && !isCurrentSongInList(songId)) {
+                addSongToList(songId, songName, songUrl);
             } else if (isCurrentSongInList(songId)) {
                 alert("Song is already in the list.");
             }
         }
+
 
         // Function to check if the current song is in the list
         function isCurrentSongInList(songId) {
