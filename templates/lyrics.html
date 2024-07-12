@@ -34,25 +34,27 @@
             padding: 20px;
             border-radius: 5px;
             border: 1px solid #ddd;
-            text-align: center; /* Center lyrics text */
+            text-align: center;
             margin-bottom: 20px;
             max-height: 60vh;
             overflow-y: auto;
             font-size: 1em;
-            position: relative; /* Added for positioning */
+            position: relative;
         }
         .lyrics {
             white-space: pre-wrap;
-            text-align: center; /* Center lyrics text */
+            text-align: center;
+            position: relative;
         }
+
         .text-size-selector {
-            position: sticky; /* Sticky positioning to remain fixed within lyrics container */
-            top: 10px; /* Adjust as needed */
+            position: sticky;
+            top: 10px;
             background-color: #f9f9f9;
             padding: 10px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1; /* Ensure it appears above lyrics when scrolling */
+            z-index: 1;
         }
         .text-size-selector select,
         .text-size-selector input[type="range"],
@@ -66,13 +68,13 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 10px; /* Adjust margin for spacing */
+            margin-top: 10px;
         }
         .fullscreen-button:hover {
             background-color: #0056b3;
         }
         .start-stop-button {
-            background-color: #4CAF50; /* Green */
+            background-color: #4CAF50;
             border: none;
             color: white;
             padding: 8px 12px;
@@ -80,7 +82,7 @@
             text-decoration: none;
             display: inline-block;
             font-size: 16px;
-            margin-top: 10px; /* Adjust margin for spacing */
+            margin-top: 10px;
             cursor: pointer;
             border-radius: 5px;
         }
@@ -88,7 +90,7 @@
             background-color: #45a049;
         }
         .karaoke-mode-button {
-            background-color: #f39c12; /* Orange */
+            background-color: #f39c12;
             border: none;
             color: white;
             padding: 8px 12px;
@@ -112,7 +114,6 @@
             text-decoration: underline;
         }
 
-        /* Full-screen mode styles */
         .fullscreen {
             position: fixed;
             top: 0;
@@ -123,91 +124,156 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 100; /* Ensure full-screen elements are on top */
+            z-index: 100;
         }
         .fullscreen .container {
-            max-width: 100%; /* Adjust as needed */
-            box-shadow: none; /* Remove shadow in full-screen mode */
-            overflow: auto; /* Allow scrolling in full-screen mode */
-            text-align: center; /* Center contents */
+            max-width: 100%;
+            box-shadow: none;
+            overflow: auto;
+            text-align: center;
         }
         .fullscreen .lyrics-container {
-            max-width: 100%; /* Ensure lyrics container takes full width */
-            text-align: center; /* Center lyrics text */
+            max-width: 100%;
+            text-align: center;
         }
         .fullscreen .text-size-selector {
-            top: 10px; /* Adjust as needed */
-            position: absolute; /* Position absolutely for centering */
-            left: 50%; /* Center horizontally */
-            transform: translateX(-50%); /* Adjust for centering */
-            background-color: rgba(249, 249, 249, 0.9); /* Adjust background opacity */
+            top: 10px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(249, 249, 249, 0.9);
             padding: 10px;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1; /* Ensure it appears above lyrics */
+            z-index: 1;
         }
-
-        /* Hide full-screen button on iPhone Safari */
-        @supports (-webkit-touch-callout: none) {
-            .fullscreen-button {
-                display: none;
-            }
-        }
-
-        /* Hide elements in karaoke mode */
         .karaoke-mode .text-size-selector,
         .karaoke-mode .start-stop-button,
         .karaoke-mode .fullscreen-button {
             display: none;
         }
+        .lyrics {
+            white-space: pre-wrap;
+            text-align: center;
+            position: relative;
+            padding: 50% 0; /* Add margin top and bottom */
+        }
     </style>
     <script>
-        var scrollSpeed = 50; // Initial scrolling speed (milliseconds)
-        var autoScrollInterval; // Variable to store auto-scroll interval
-        var isAutoScrolling = false; // Flag to track auto-scrolling state
-        var lastScrollTop = 0; // Variable to store last scroll position
+        var autoScrollInterval = null;
+        var isAutoScrolling = false;
+        var timeoutId;
+        const timeoutDuration = 3000; // 3 seconds
 
         function changeTextSize() {
             var selectedSize = document.getElementById("text-size").value;
-            document.querySelector(".lyrics").style.fontSize = selectedSize + "em";
+            var lyricsContainer = document.querySelector(".lyrics");
+            lyricsContainer.style.fontSize = selectedSize + "em";
             // Update scroll speed based on selected size
             scrollSpeed = Math.floor(50 / selectedSize); // Adjust speed based on text size (adjust as needed)
         }
 
-        function toggleAutoScroll() {
-            if (!isAutoScrolling) {
-                startAutoScroll();
-                isAutoScrolling = true;
-                document.getElementById("auto-scroll-btn").innerText = "Stop Auto Scroll";
-            } else {
-                stopAutoScroll();
-                isAutoScrolling = false;
-                document.getElementById("auto-scroll-btn").innerText = "Start Auto Scroll";
-            }
+        function parseLyricsWithTimecodes(lyricsWithTimecodes) {
+            var lines = lyricsWithTimecodes.split('\n');
+            var parsedLines = [];
+            var timeFormat = /\[\d{2}:\d{2}\.\d{2,3}\]/g; // Regex to match [mm:ss.ms]
+
+            lines.forEach(function(line) {
+                var matches = line.match(timeFormat);
+                if (matches) {
+                    var timecodes = matches.map(function(match) {
+                        return parseTimecode(match);
+                    });
+                    var lyrics = line.replace(timeFormat, '').trim();
+                    parsedLines.push({ timecodes: timecodes, lyrics: lyrics });
+                }
+            });
+
+            return parsedLines;
         }
 
-        function startAutoScroll() {
-            var lyricsContainer = document.querySelector(".lyrics-container");
-            var scrollHeight = lyricsContainer.scrollHeight;
-            var clientHeight = lyricsContainer.clientHeight;
-            
-            function autoScroll() {
-                if (isAutoScrolling) {
-                    var scrollPosition = lyricsContainer.scrollTop;
-                    if (scrollPosition < scrollHeight - clientHeight) {
-                        lyricsContainer.scrollTop += 1;
+        function parseTimecode(timecode) {
+            var timeParts = timecode.replace('[', '').replace(']', '').split(':');
+            var minutes = parseInt(timeParts[0], 10);
+            var seconds = parseFloat(timeParts[1]);
+            var milliseconds = parseFloat(timeParts[2]) * 10 || 0; // Convert to milliseconds, assuming two digits for ms
+
+            return (minutes * 60 + seconds + milliseconds / 1000) * 1000; // Convert to milliseconds
+        }
+
+        function startAutoScrollWithTimecodes() {
+            var lyricsWithTimecodes = `{{ lyrics }}`;
+            var parsedLines = parseLyricsWithTimecodes(lyricsWithTimecodes);
+
+            var currentIndex = 0;
+            var lyricsContainer = document.querySelector('.lyrics');
+            var lyricsScrollContainer = document.querySelector('.lyrics-container');
+
+            if (!parsedLines || parsedLines.length === 0) {
+                console.error("Parsed lines are empty or undefined.");
+                return;
+            }
+
+            var startTime = performance.now();
+            var scrollOffset = lyricsScrollContainer.offsetTop;
+            var containerHeight = lyricsScrollContainer.clientHeight;
+            var lyricsHeight = lyricsContainer.clientHeight;
+
+            function scroll() {
+                var currentTime = performance.now() - startTime;
+
+                // Log current time and displayed lyrics
+                console.log("Current Time: " + currentTime.toFixed(2) + " ms");
+
+                // Find the correct line to display based on currentTime
+                while (currentIndex < parsedLines.length && parsedLines[currentIndex].timecodes[0] <= currentTime) {
+                    currentIndex++;
+                }
+
+                // Prepare HTML for lyrics with highlighting
+                var html = '';
+                for (var i = 0; i < parsedLines.length; i++) {
+                    if (i === currentIndex - 1) {
+                        html += '<span class="highlight">' + parsedLines[i].lyrics + '</span><br>';
                     } else {
-                        stopAutoScroll();
-                        document.getElementById("auto-scroll-btn").innerText = "Start Auto Scroll";
+                        html += '<span class="dim">' + parsedLines[i].lyrics + '</span><br>';
                     }
                 }
+                lyricsContainer.innerHTML = html;
+
+                // Calculate where to scroll to center the highlighted line vertically
+                var currentLine = lyricsContainer.querySelector('.highlight');
+                if (currentLine) {
+                    var lineOffsetTop = currentLine.offsetTop;
+                    var scrollTo = lineOffsetTop - (containerHeight / 2) + (currentLine.clientHeight / 2);
+                    lyricsScrollContainer.scrollTop = scrollTo;
+                }
+
+                // Check if we have reached the end of lyrics
+                if (currentIndex >= parsedLines.length) {
+                    console.log("End of lyrics reached.");
+                    return;
+                }
+
+                // Request next frame
+                autoScrollInterval = requestAnimationFrame(scroll);
             }
-            
-            autoScrollInterval = setInterval(autoScroll, scrollSpeed);
+
+            // Start scrolling
+            if (!isAutoScrolling) {
+                autoScrollInterval = requestAnimationFrame(scroll);
+                isAutoScrolling = true;
+                document.getElementById('auto-scroll-btn').innerText = "Stop Auto Scroll";
+            } else {
+                stopAutoScroll();
+            }
         }
 
         function stopAutoScroll() {
-            clearInterval(autoScrollInterval);
+            cancelAnimationFrame(autoScrollInterval);
+            autoScrollInterval = null;
+            isAutoScrolling = false;
+            document.getElementById('auto-scroll-btn').innerText = "Start Auto Scroll";
         }
 
         function toggleFullScreen() {
@@ -236,93 +302,65 @@
                     document.msExitFullscreen();
                 }
             }
+            handleFullScreenChange();
         }
 
-        function updateScrollSpeed() {
-            var speedSlider = document.getElementById("scroll-speed");
-            scrollSpeed = speedSlider.value;
-            if (isAutoScrolling) {
-                clearInterval(autoScrollInterval);
-                startAutoScroll();
+        function handleFullScreenChange() {
+            var textSizeSelector = document.querySelector('.text-size-selector');
+            if (document.fullscreenElement) {
+                textSizeSelector.style.display = 'block'; // Show when entering fullscreen
+                resetTimeout(); // Reset timeout on entering fullscreen
+            } else {
+                textSizeSelector.style.display = 'block'; // Show immediately
+                resetTimeout(); // Reset timeout on exiting fullscreen
             }
+        }
+
+        function resetTimeout() {
+            clearTimeout(timeoutId);
+            var textSizeSelector = document.querySelector('.text-size-selector');
+            textSizeSelector.style.display = 'block'; // Show on user activity
+            timeoutId = setTimeout(() => {
+                textSizeSelector.style.display = 'none'; // Hide after inactivity
+            }, timeoutDuration);
         }
 
         function toggleKaraokeMode() {
-            var lyricsContainer = document.querySelector(".lyrics-container");
             var karaokeButton = document.getElementById("karaoke-mode-btn");
+            var lyricsContainer = document.querySelector('.lyrics-container');
 
             if (lyricsContainer.classList.contains("karaoke-mode")) {
-                // Exit karaoke mode
                 lyricsContainer.classList.remove("karaoke-mode");
                 karaokeButton.innerText = "Karaoke Mode Off";
-                document.querySelector(".text-size-selector").style.display = "block";
-                document.querySelector(".start-stop-button").style.display = "inline-block";
-                document.querySelector(".fullscreen-button").style.display = "inline-block";
             } else {
-                // Enter karaoke mode
                 lyricsContainer.classList.add("karaoke-mode");
                 karaokeButton.innerText = "Karaoke Mode On";
-                document.querySelector(".text-size-selector").style.display = "none";
-                document.querySelector(".start-stop-button").style.display = "none";
-                document.querySelector(".fullscreen-button").style.display = "none";
             }
         }
-        function addToSongList() {
-            // Function to extract song ID from URL
-            function getSongIdFromUrl() {
-                var pathArray = window.location.pathname.split('/');
-                return pathArray[pathArray.length - 1]; // Assuming song ID is the last part of the URL
-            }
 
-            var songId = getSongIdFromUrl(); // Get the song ID from the current URL
-            var songListContainer = document.getElementById("songListContainer");
-            var songList = songListContainer.querySelector("ul");
-
-            // Check if the song is already in the list to avoid duplicates (optional)
-            var existingSong = songList.querySelector("li[data-id='" + songId + "']");
-            if (existingSong) {
-                alert("Song is already in the list.");
-                return;
-            }
-
-            // Create a new list item for the song
-            var newSongItem = document.createElement("li");
-            newSongItem.textContent = "{{ song_title }} by {{ artist }}"; // Display song title and artist
-            newSongItem.setAttribute("data-id", songId); // Add a data attribute for identification
-
-            // Add click event to navigate back to the same lyrics page
-            newSongItem.addEventListener("click", function() {
-                window.location.href = "/lyrics/" + songId; // Adjust URL structure as per your route
-            });
-
-            // Append the new song item to the song list
-            songList.appendChild(newSongItem);
-        }
-
-        // Ensure karaoke mode is off on page load and all controllers are hidden
         window.onload = function() {
-            var lyricsContainer = document.querySelector(".lyrics-container");
+            var lyricsContainer = document.querySelector('.lyrics-container');
             var karaokeButton = document.getElementById("karaoke-mode-btn");
             if (lyricsContainer.classList.contains("karaoke-mode")) {
                 lyricsContainer.classList.remove("karaoke-mode");
             }
-            karaokeButton.innerText = "Karaoke Mode Off"; // Set the correct initial state
-            document.querySelector(".text-size-selector").style.display = "block";
-            document.querySelector(".start-stop-button").style.display = "inline-block";
-            document.querySelector(".fullscreen-button").style.display = "inline-block";
-            document.querySelector(".karaoke-mode-button").click(); // Simulate click to ensure initial state is set correctly
-        }
+            karaokeButton.innerText = "Karaoke Mode Off";
+
+            // Set up event listeners to detect user activity
+            document.addEventListener('mousemove', resetTimeout);
+            document.addEventListener('keypress', resetTimeout);
+            document.addEventListener('scroll', resetTimeout);
+            document.addEventListener('click', resetTimeout);
+            document.addEventListener('fullscreenchange', handleFullScreenChange);
+        };
     </script>
 </head>
 <body>
     <div class="container">
-        <!-- Your existing HTML structure -->
         <h1>{{ song_title }} by {{ artist }}</h1>
         <button class="karaoke-mode-button" id="karaoke-mode-btn" onclick="toggleKaraokeMode()">Karaoke Mode Off</button>
-        <!-- Adjusted "+" icon aligned horizontally with karaoke button -->
         <span style="float: right; margin-left: 10px;">
-            <!-- Adjusted to call addSongToList() from floating_button.html -->
-            <button id="addButton" onclick="addSongToList()">+</button>
+            <button id="addButton" onclick="addToSongList()">+</button>
         </span>
         <div class="lyrics-container">
             <div class="text-size-selector">
@@ -333,8 +371,8 @@
                     <option value="4">Larger</option>
                     <option value="6">Largest</option>
                 </select>
-                <input type="range" id="scroll-speed" class="scroll-speed-slider" min="10" max="200" value="50" onchange="updateScrollSpeed()">
-                <button class="start-stop-button" id="auto-scroll-btn" onclick="toggleAutoScroll()">Start Auto Scroll</button>
+                 <!-- <input type="range" id="scroll-speed" class="scroll-speed-slider" min="10" max="200" value="50" onchange="updateScrollSpeed()"> -->
+                <button class="start-stop-button" id="auto-scroll-btn" onclick="startAutoScrollWithTimecodes()">Start Auto Scroll</button>
                 <button class="fullscreen-button" onclick="toggleFullScreen()">Toggle Full Screen</button>
             </div>
             <div class="lyrics">
@@ -343,15 +381,13 @@
         </div>
         <a href="{{ url_for('home') }}">Back to Search</a>
     </div>
+    
     <!-- Include floating button and song list container -->
     {% include 'floating_button.html' %}
     
     <!-- Song list container (initially hidden) -->
     <div class="song-list-container" id="songListContainer" style="display: none;">
-        <!-- Your existing HTML structure -->
+        <!-- Your song list HTML structure here -->
     </div>
-<!-- 
-    <script src="{{ url_for('static', filename='js/floating_song_list.js') }}"></script>
-    -->
 </body>
 </html>
